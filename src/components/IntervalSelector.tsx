@@ -7,33 +7,37 @@ import {
   FormGroup,
   IconButton,
   Input,
-} from "@mui/material";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import { useState } from "react";
-import { getSettings, setSettings } from "../utils/localStorage";
+} from "@mui/material"
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
+import { useState } from "react"
+import { getSettings, setSettings } from "../utils/localStorage"
 
 interface IProps {
-  interval?: number;
-  setInterval: (interval: number) => void;
-  onBack: () => void;
-  start: () => void;
+  interval?: number
+  maxImages: number
+  setInterval: (interval: number) => void
+  setMaxImages: (maxImages: number) => void
+  onBack: () => void
+  start: () => void
 }
 
-const intervals = [10, 30, 60, 120, 240, 300];
+const intervals = [10, 30, 60, 120, 240, 300]
+
+const maxImages = [10, 15, 20, 25, 30, 35, 40, 45]
 
 export function IntervalSelector(props: IProps) {
   const [showImagePath, setShowImagePath] = useState<boolean>(
-    getSettings().showImagePath,
-  );
+    getSettings().showImagePath
+  )
 
   const handleChangeImagePath = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const showImagePath = event.target.checked;
-    const settings = getSettings();
-    setSettings({ ...settings, showImagePath });
-    setShowImagePath(showImagePath);
-  };
+    const showImagePath = event.target.checked
+    const settings = getSettings()
+    setSettings({ ...settings, showImagePath })
+    setShowImagePath(showImagePath)
+  }
 
   return (
     <div>
@@ -43,7 +47,7 @@ export function IntervalSelector(props: IProps) {
           alignItems: "center",
         }}
       >
-        <IconButton onClick={props.onBack} aria-label="back">
+        <IconButton onClick={props.onBack} aria-label='back'>
           <ChevronLeftIcon />
         </IconButton>
         Select Interval
@@ -51,13 +55,13 @@ export function IntervalSelector(props: IProps) {
       <div>
         <Box my={1}>
           <ButtonGroup
-            variant="contained"
-            aria-label="outlined primary button group"
+            variant='contained'
+            aria-label='outlined primary button group'
           >
             <Button
               color={props.interval === Infinity ? "info" : undefined}
               onClick={() => {
-                props.setInterval(Infinity);
+                props.setInterval(Infinity)
               }}
             >
               No Interval
@@ -67,19 +71,71 @@ export function IntervalSelector(props: IProps) {
               <Button
                 color={props.interval === interval ? "info" : undefined}
                 onClick={() => {
-                  props.setInterval(interval);
+                  props.setInterval(interval)
                 }}
+                key={interval}
               >
                 {interval}
               </Button>
             ))}
           </ButtonGroup>
           <Input
-            size="small"
+            size='small'
             onChange={(e) =>
               !isNaN(+e.target.value) && props.setInterval(+e.target.value)
             }
-            value={props.interval === Infinity ? "-" : (props.interval ?? "")}
+            value={props.interval === Infinity ? "-" : props.interval ?? ""}
+            sx={{
+              mx: 1,
+              maxWidth: "5rem",
+              input: {
+                textAlign: "center",
+              },
+            }}
+          ></Input>
+        </Box>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        Select Max Images
+      </div>
+      <div>
+        <Box my={1}>
+          <ButtonGroup
+            variant='contained'
+            aria-label='outlined primary button group'
+          >
+            <Button
+              color={props.maxImages === Infinity ? "info" : undefined}
+              onClick={() => {
+                props.setMaxImages(Infinity)
+              }}
+            >
+              No Max
+            </Button>
+
+            {maxImages.map((maxImage) => (
+              <Button
+                color={props.maxImages === maxImage ? "info" : undefined}
+                onClick={() => {
+                  props.setMaxImages(maxImage)
+                }}
+                key={maxImage}
+              >
+                {maxImage}
+              </Button>
+            ))}
+          </ButtonGroup>
+          <Input
+            size='small'
+            onChange={(e) =>
+              !isNaN(+e.target.value) && props.setMaxImages(+e.target.value)
+            }
+            value={props.maxImages === Infinity ? "-" : props.maxImages ?? ""}
             sx={{
               mx: 1,
               maxWidth: "5rem",
@@ -100,16 +156,16 @@ export function IntervalSelector(props: IProps) {
                   onChange={handleChangeImagePath}
                 />
               }
-              label="Show image path"
+              label='Show image path'
             />
           </FormGroup>
         </Box>
       </div>
       <div>
-        <Button variant="contained" className="wide" onClick={props.start}>
+        <Button variant='contained' className='wide' onClick={props.start}>
           Start
         </Button>
       </div>
     </div>
-  );
+  )
 }

@@ -6,96 +6,106 @@ import {
   ListItemButton,
   ListItemText,
   ListSubheader,
-} from "@mui/material";
-import React from "react";
-import DatasetCreation from "./CreateCollection";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Header } from "./Header";
-import { IntervalSelector } from "./IntervalSelector";
+} from "@mui/material"
+import React from "react"
+import DatasetCreation from "./CreateCollection"
+import DeleteIcon from "@mui/icons-material/Delete"
+import { Header } from "./Header"
+import { IntervalSelector } from "./IntervalSelector"
 
 interface IProps {
-  onDirSelected(filepaths: string[], interval: number): void;
+  onDirSelected(filepaths: string[], interval: number, maxImages: number): void
 }
 
 interface IState {
-  folders: string[];
-  interval: number;
-  datasets: Record<string, string[]>;
-  showDatasetCreation: boolean;
+  folders: string[]
+  interval: number
+  datasets: Record<string, string[]>
+  showDatasetCreation: boolean
+  maxImages: number
 }
 
 export default class MainMenu extends React.Component<IProps, IState> {
   constructor(props: IProps) {
-    super(props);
+    super(props)
 
-    const localData = localStorage.getItem("datasets");
-    const datasets = localData ? JSON.parse(localData) : {};
+    const localData = localStorage.getItem("datasets")
+    const datasets = localData ? JSON.parse(localData) : {}
 
     this.state = {
       folders: null,
       interval: Infinity,
       datasets,
       showDatasetCreation: false,
-    };
+      maxImages: Infinity,
+    }
   }
 
   onLoadFolder = async () => {
-    const result = await window.funcs.loadFolder();
-    if (result.canceled) return;
+    const result = await window.funcs.loadFolder()
+    if (result.canceled) return
 
-    console.log(result);
+    console.log(result)
 
-    this.setState({ folders: result.filePaths });
-  };
+    this.setState({ folders: result.filePaths })
+  }
 
-  createNewDataset = () => this.setState({ showDatasetCreation: true });
-  closeNewDataset = () => this.setState({ showDatasetCreation: false });
+  createNewDataset = () => this.setState({ showDatasetCreation: true })
+  closeNewDataset = () => this.setState({ showDatasetCreation: false })
   saveDataSet = (name: string, folders: string[]) => {
-    const newDatasets = { ...this.state.datasets, [name]: folders };
+    const newDatasets = { ...this.state.datasets, [name]: folders }
     this.setState({
       datasets: newDatasets,
       showDatasetCreation: false,
-    });
+    })
 
-    this.saveDatasets(newDatasets);
-  };
+    this.saveDatasets(newDatasets)
+  }
 
   removeDataSet = (dataset: string) => {
-    const { [dataset]: _, ...rest } = this.state.datasets;
-    this.setState({ datasets: rest });
+    const { [dataset]: _, ...rest } = this.state.datasets
+    this.setState({ datasets: rest })
 
-    this.saveDatasets(rest);
-  };
+    this.saveDatasets(rest)
+  }
 
   saveDatasets = (datasets: Record<string, string[]>) => {
-    localStorage.setItem("datasets", JSON.stringify(datasets));
-  };
+    localStorage.setItem("datasets", JSON.stringify(datasets))
+  }
 
   setInterval = (interval: number) => {
-    this.setState({ interval });
-  };
+    this.setState({ interval })
+  }
+
+  setMaxImages = (maxImages: number) => {
+    this.setState({ maxImages })
+  }
 
   start = () => {
-    this.props.onDirSelected(this.state.folders, this.state.interval);
-  };
+    this.props.onDirSelected(
+      this.state.folders,
+      this.state.interval,
+      this.state.maxImages
+    )
+  }
 
   clearFolders = () => {
-    this.setState({ folders: null });
-  };
+    this.setState({ folders: null })
+  }
 
   render() {
     return (
       <>
-        <div className="main">
-          <div className="main-menu">
+        <div className='main'>
+          <div className='main-menu'>
             <Header />
             {/* Folder Selection */}
             {!this.state.folders && !this.state.showDatasetCreation && (
               <div>
                 <div>
                   <Button
-                    className="wide"
-                    variant="contained"
+                    className='wide'
+                    variant='contained'
                     onClick={this.onLoadFolder}
                   >
                     Quick shuffle folder
@@ -110,8 +120,8 @@ export default class MainMenu extends React.Component<IProps, IState> {
                     subheader={
                       !Object.keys(this.state.datasets).length && (
                         <ListSubheader
-                          component="div"
-                          id="nested-list-subheader"
+                          component='div'
+                          id='nested-list-subheader'
                         >
                           {Object.keys(this.state.datasets).length
                             ? "Collections"
@@ -133,21 +143,21 @@ export default class MainMenu extends React.Component<IProps, IState> {
                             <ListItemText primary={datasetKey} />
                           </ListItemButton>
                           <IconButton
-                            aria-label="delete"
+                            aria-label='delete'
                             onClick={() => this.removeDataSet(datasetKey)}
                           >
                             <DeleteIcon />
                           </IconButton>
                         </ListItem>
-                      ),
+                      )
                     )}
                   </List>
                 </div>
                 <div>
                   <Button
                     onClick={this.createNewDataset}
-                    variant="contained"
-                    className="wide"
+                    variant='contained'
+                    className='wide'
                   >
                     + add new collection
                   </Button>
@@ -169,6 +179,8 @@ export default class MainMenu extends React.Component<IProps, IState> {
               <IntervalSelector
                 onBack={this.clearFolders}
                 interval={this.state.interval}
+                maxImages={this.state.maxImages}
+                setMaxImages={this.setMaxImages}
                 setInterval={this.setInterval}
                 start={this.start}
               />
@@ -176,6 +188,6 @@ export default class MainMenu extends React.Component<IProps, IState> {
           </div>
         </div>
       </>
-    );
+    )
   }
 }

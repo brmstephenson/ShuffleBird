@@ -1,34 +1,36 @@
-import React from "react";
+import React from "react"
 
-import { ImageLoader } from "../../utils/imageLoader";
-import { Timer } from "../../utils/timer";
-import SliderControls from "./SliderControls";
-import Loader from "./Loader";
-import { getSettings } from "../../utils/localStorage";
-import { ImagePathContainer } from "./ImagePathContainer";
+import { ImageLoader } from "../../utils/imageLoader"
+import { Timer } from "../../utils/timer"
+import SliderControls from "./SliderControls"
+import Loader from "./Loader"
+import { getSettings } from "../../utils/localStorage"
+import { ImagePathContainer } from "./ImagePathContainer"
 
 interface IProps {
-  folders: string[];
-  interval: number;
-  onStop(): void;
+  folders: string[]
+  interval: number
+  onStop(): void
+  maxImages: number
 }
 
 interface IState {
-  files: string[];
-  filename: string;
-  src: string;
-  progress: number;
-  isPaused: boolean;
-  hasLoaded: boolean;
+  files: string[]
+  filename: string
+  src: string
+  progress: number
+  isPaused: boolean
+  hasLoaded: boolean
+  numberOfImagesShown: number
 }
 
 export default class ImageSlider extends React.Component<IProps, IState> {
-  timer: Timer;
-  imageLoader: ImageLoader;
-  settings = getSettings();
+  timer: Timer
+  imageLoader: ImageLoader
+  settings = getSettings()
 
   constructor(params: IProps) {
-    super(params);
+    super(params)
 
     this.state = {
       files: [],
@@ -37,86 +39,97 @@ export default class ImageSlider extends React.Component<IProps, IState> {
       progress: 0,
       isPaused: false,
       hasLoaded: false,
-    };
+      numberOfImagesShown: 0,
+    }
   }
 
   componentDidMount(): void {
     window.funcs
       .getDirFilesList(this.props.folders)
       .then((files: string[]) => {
-        this.imageLoader = new ImageLoader(files);
+        this.imageLoader = new ImageLoader(files)
         this.setState(
-          { files: this.state.files.concat(files), hasLoaded: true },
+          {
+            files: this.state.files.concat(files),
+            hasLoaded: true,
+          },
           () => {
-            this.loadRandomImage();
+            this.loadRandomImage()
             this.timer = new Timer(
               300,
               this.props.interval * 1000,
               this.loadNewImage,
-              this.onTick,
-            );
-            this.start();
-          },
-        );
+              this.onTick
+            )
+            this.start()
+          }
+        )
       })
-      .catch(console.error);
+      .catch(console.error)
   }
 
   componentWillUnmount(): void {
-    this.timer.release();
+    this.timer.release()
   }
 
   loadNewImage = () => {
-    console.log("load new image");
-    this.loadRandomImage();
-  };
+    this.loadRandomImage()
+  }
 
-  onTick = (progress: number) => this.setState({ progress });
+  onTick = (progress: number) => this.setState({ progress })
 
   loadRandomImage() {
-    this.imageLoader
-      .forward()
-      .then(({ filename, src }) => this.setState({ filename, src }));
+    if (this.state.numberOfImagesShown === this.props.maxImages) {
+      this.props.onStop()
+      return
+    }
+    this.imageLoader.forward().then(({ filename, src }) =>
+      this.setState({
+        filename,
+        src,
+        numberOfImagesShown: this.state.numberOfImagesShown + 1,
+      })
+    )
   }
 
   start = () => {
-    this.timer.start();
-    this.setState({ isPaused: false });
-  };
+    this.timer.start()
+    this.setState({ isPaused: false })
+  }
 
   previousImage = () => {
     this.imageLoader.backwards().then((result) => {
-      if (!result) return;
-      const { filename, src } = result;
-      this.setState({ filename, src });
-    });
-    this.timer.reset();
-  };
+      if (!result) return
+      const { filename, src } = result
+      this.setState({ filename, src })
+    })
+    this.timer.reset()
+  }
 
   nextImage = () => {
-    this.loadRandomImage();
-    this.timer.reset();
-  };
+    this.loadRandomImage()
+    this.timer.reset()
+  }
 
   pause = () => {
-    this.timer.pause();
-    this.setState({ isPaused: true });
-  };
+    this.timer.pause()
+    this.setState({ isPaused: true })
+  }
 
   stop = () => {
-    this.props.onStop();
-  };
+    this.props.onStop()
+  }
 
   render() {
     return (
-      <div className="image-slider-area">
+      <div className='image-slider-area'>
         {this.state.hasLoaded ? (
           <>
             {this.settings.showImagePath && (
               <ImagePathContainer filename={this.state.filename} />
             )}
 
-            <div id="image-container">
+            <div id='image-container'>
               {this.state.src && <img src={this.state.src} />}
             </div>
 
@@ -130,12 +143,12 @@ export default class ImageSlider extends React.Component<IProps, IState> {
               isPaused={this.state.isPaused}
               hideProgressBar={this.props.interval === Infinity}
             />
-            <div className="progress-bar"></div>
+            <div className='progress-bar'></div>
           </>
         ) : (
           <Loader />
         )}
       </div>
-    );
+    )
   }
 }
